@@ -15,7 +15,26 @@ start:
     call print
     jmp $ ; this jumps to the current address, effectively creating an infinite loop
 
-print:
+print_hex:
+    mov ax, bx
+    and ax, 0xf000 ; prendi le 4 prime cifre
+    shr ax, 12
+    cmp ax, 9 ;check if is a digit
+    jle print_hex_digit 
+    
+    add ax, 55 ; aggiunge offset per cifre A-F
+    jmp print_hex_end
+print_hex_digit:
+    add ax, 48 ; aggiunge offset ascii per cifre decimali
+print_hex_end:
+    call print_char
+    
+    shl bx, 4 ; shifta di 4 verso sinistra
+    cmp bx, 0
+    jne print_hex
+    ret
+
+print_string:
     mov bx, 0
 loop:
     lodsb
