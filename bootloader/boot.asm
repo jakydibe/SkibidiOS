@@ -1,8 +1,11 @@
 ORG 0x7c00
 BITS 16
 
+KERNEL_OFFSET equ  0x1000
+
 start:
     cli
+    ; inizialize all registers to 0
     mov ax, 0x00
     mov ds, ax
     mov es, ax
@@ -18,7 +21,7 @@ start:
     ; Set up parameters for INT 0x13
     mov ah, 2          ; Function: Read Sectors
     mov al, 2          ; Number of sectors to read
-    mov bx, 0x9000        ; Load address of the buffer into BX
+    mov bx, KERNEL_OFFSET     ; Load address of the KERNEL_OFFSET into BX
     mov ch, 0             ; Cylinder number (0)
     mov cl, 2             ; Sector number (start reading from sector 2)
     mov dh, 0             ; Head number (0)
@@ -34,11 +37,15 @@ start:
     jmp .infinite_loop
 
 .kernel_loaded:
-    mov ax, [0x9000] ; first sector 0xdada
-    call print_hex
-
-    mov ax, [0x9200] ; second sector 0xface
-    call print_hex
+    mov bx, 0x0
+.loop_stampa:
+    ; mov cx, bx
+    ; add cx, KERNEL_OFFSET
+    ; mov ax, [KERNEL_OFFSET + bx]
+    ; ; call print_hex
+    ; add bx, 2
+    ; cmp bx, 0x20
+    ; jne .loop_stampa
 
     mov si, MSG_KERNEL_LOADED
     call print_string      ; Print kernel load message
@@ -47,6 +54,7 @@ start:
     cli     ; We must switch of interrupts until we have
             ; set - up the protected mode interrupt vector
             ; otherwise interrupts will run riot.
+
 
     lgdt[gdt32_descriptor]      ; Load our global descriptor table , which defines
                                 ; the protected mode segments ( e.g. for code and data )
@@ -63,27 +71,33 @@ start:
     jmp $
 
 %include "print/print_hex.asm"
+%include "print/print_hex_pm.asm"
 %include "print/print_string.asm"
 %include "print/print_string_pm.asm"
 %include "gdt/gdt32.asm"
 
-[bits 32]
+BITS 32
 protected_mode:
     ; Initialise registers and the stack once in PM.
-    mov ax, DATA32_SEG ; Now in PM , our old segments are meaningless ,
-    mov ds, ax ; so we point our segment registers to the
-    mov ss, ax ; data selector we defined in our GDT
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    mov eax, DATA32_SEG ; Now in PM , our old segments are meaningless ,
+    mov ds, eax ; so we point our segment registers to the
+    mov ss, eax ; data selector we defined in our GDT
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
     mov ebp, 0x90000 ; Update our stack position so it is right
     mov esp, ebp ; at the top of the free space.
 
     mov ebx , MSG_PROT_MODE
     call print_string_pm ; Use our 32 - bit print routine.
-    
-    jmp $ ; Hang.
 
+    mov ax, 0x1234
+    call print_hex_pm
+    jmp $
+    ; jmp 0x1000
+    ; jmp KERNEL_OFFSET ; jmp in the kernel entry point
+    ; jmp start.infinite_loop
+    
 ; Global variables
 BOOT_DRIVE : db 0
 MSG_REAL_MODE db " Started in 16 - bit Real Mode",0x0A, 0x0D, 0
@@ -94,5 +108,12 @@ MSG_PROT_MODE db " Successfully landed in 32 - bit Protected Mode " , 0
 times 510 -($ - $$) db 0
 dw 0xAA55
 
-times 256 dw 0xdada
-times 256 dw 0xface
+kernel_main:
+
+    mov ebx, MSG_REAL_MODE
+    call print_string_pm
+.infinite_loop:
+    jmp .infinite_loop
+    
+times 256 dw 0xdead
+times 256 dw 0xbeef
