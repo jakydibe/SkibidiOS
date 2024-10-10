@@ -1,0 +1,5 @@
+# Ignora file binari
+*.bin
+
+# Ignora file oggetto (compilazione)
+*.o

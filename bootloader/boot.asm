@@ -25,10 +25,10 @@ start:
 
     
     mov ah, 2          ; Function: Read Sectors
-    mov al, 2          ; Number of sectors to read
+    mov al, 2         ; Number of sectors to read
     mov bx, KERNEL_OFFSET     ; Load address of the KERNEL_OFFSET into BX
     mov ch, 0             ; Cylinder number (0)
-    mov cl, 2             ; Sector number (start reading from sector 2)
+    mov cl, 2              ; Sector number (start reading from sector 2)
     mov dh, 0             ; Head number (0)
     mov dl, [BOOT_DRIVE] ; Drive number (from data section)
 
@@ -75,11 +75,11 @@ start:
 .infinite_loop:
     jmp $
 
-%include "print/print_hex.asm"
-%include "print/print_hex_pm.asm"
-%include "print/print_string.asm"
-%include "print/print_string_pm.asm"
-%include "gdt/gdt32.asm"
+%include "./bootloader/print/print_hex.asm"
+%include "./bootloader/print/print_hex_pm.asm"
+%include "./bootloader/print/print_string.asm"
+%include "./bootloader/print/print_string_pm.asm"
+%include "./bootloader/gdt/gdt32.asm"
 
 BITS 32
 protected_mode:
@@ -104,6 +104,7 @@ protected_mode:
 
     ;mov ax, 0x1234
     ;call print_hex_pm
+    
     jmp KERNEL_OFFSET
     ; jmp 0x1000
     ; jmp KERNEL_OFFSET ; jmp in the kernel entry point
