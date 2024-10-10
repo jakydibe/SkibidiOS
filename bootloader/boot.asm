@@ -18,12 +18,7 @@ start:
 
     mov [BOOT_DRIVE], dl ; BIOS stores our boot drive in DL , so it ’s best to remember this for later.
 
-
-
-
     ; Set up parameters for INT 0x13
-
-    
     mov ah, 2          ; Function: Read Sectors
     mov al, 2         ; Number of sectors to read
     mov bx, KERNEL_OFFSET     ; Load address of the KERNEL_OFFSET into BX
@@ -42,16 +37,6 @@ start:
     jmp .infinite_loop
 
 .kernel_loaded:
-    mov bx, 0x0
-.loop_stampa:
-    ; mov cx, bx
-    ; add cx, KERNEL_OFFSET
-    ; mov ax, [KERNEL_OFFSET + bx]
-    ; ; call print_hex
-    ; add bx, 2
-    ; cmp bx, 0x20
-    ; jne .loop_stampa
-
     mov si, MSG_KERNEL_LOADED
     call print_string      ; Print kernel load message
 
@@ -93,22 +78,15 @@ protected_mode:
     mov ebp, 0x90000 ; Update our stack position so it is right
     mov esp, ebp ; at the top of the free space.
 
-
     ; Enable A20 line, l'ho trovato qui: https://wiki.osdev.org/A20_Line
     in al, 0x92
     or al, 2
     out 0x92, al
 
-    ;mov ebx , MSG_PROT_MODE
-    ;call print_string_pm ; Use our 32 - bit print routine.
+    mov ebx, MSG_PROT_MODE
+    call print_string_pm
 
-    ;mov ax, 0x1234
-    ;call print_hex_pm
-    
     jmp KERNEL_OFFSET
-    ; jmp 0x1000
-    ; jmp KERNEL_OFFSET ; jmp in the kernel entry point
-    ; jmp start.infinite_loop
     
 ; Global variables
 BOOT_DRIVE : db 0
@@ -118,45 +96,5 @@ MSG_KERNEL_LOAD_ERROR: db ' Failed to read the disk! ',0x0A, 0x0D, 0
 MSG_KERNEL_LOADED: db ' Kernel loaded in memory, switching to protected mode',0x0A, 0x0D,  0
 MSG_PROT_MODE db " Successfully landed in 32 - bit Protected Mode " , 0
 
-
 times 510 -($ - $$) db 0
 dw 0xAA55
-
-
-; VIDEO_MEMORY equ 0xb8000
-; WHITE_ON_BLACK equ 0x0f
-; kernel_main:
-
-
-
-
-; ; prints a null - terminated string pointed to by EDX
-
-
-;     mov ax,MSG_KERNEL_SWAG
-;     call print_string_pm2  ; printa effettivamente qualcosa (si vede highlightato in bianco qualcosa), ma non la stringa. comunque sticazzi a me va bene cosi'
-; ; .infinite_loop:
-;     jmp $   ; SE NON METTO QUESTO,REBOTTA DI CONTINUO 
-
-; print_string_pm2:
-;     pusha
-;     mov edx, VIDEO_MEMORY ; Set edx to the start of vid mem.
-; .loop:
-;     mov al, [ebx] ; Store the char at EBX in AL
-;     mov ah, WHITE_ON_BLACK ; Store the attributes in AH
-;     cmp al, 0 ; if ( al == 0) , at end of string , so
-;     je .done ; jump to done
-;     mov [edx], ax ; Store char and attributes at current
-;     ; character cell.
-;     add ebx, 1 ; Increment EBX to the next char in string.
-;     add edx, 2 ; Move to next character cell in vid mem.
-;     jmp .loop ; loop around to print the next char.
-; .done:
-;     popa
-;     ret ; Return from the function
-
-
-; MSG_KERNEL_SWAG db "Kernel swag",0x0A, 0x0D, 0
-
-; times 256 dw 0xdead
-; times 256 dw 0xbeef

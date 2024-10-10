@@ -1,5 +1,14 @@
+# Ignore vscode dettings
+/.vscode
+
+# Ignore build directory
+/build
+
 # Ignora file binari
 *.bin
 
 # Ignora file oggetto (compilazione)
 *.o
+
+# Ignore os-image, to big for the moment
+os-image

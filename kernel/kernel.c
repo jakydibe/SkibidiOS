@@ -1,31 +1,37 @@
-
 #define TXT_BLANCO 0x07 //blanco sobre negro
 #define VGA_MEMORY 0xB8000
 #define VGA_WIDTH 80
 #include <stdint.h>
 
 typedef struct{
-    int8_t colore;
     uint8_t carattere;
+    int8_t colore;
 } VGA_CHAR;
 
-void _start() {
+int foo(){
+    return 0;
+}
 
-    VGA_CHAR *memoria_video = (VGA_CHAR *) (VGA_MEMORY + 2);
+int boo(){
+    return 1;
+}
+
+void kernel_main() {
+
+    VGA_CHAR *memoria_video = (VGA_CHAR *) VGA_MEMORY;
 
     uint8_t string[] = "HELLO";
     // clean_screen();
 
     
-    for(int i = 0; i < 6; i++){
-        memoria_video[i].carattere = (uint8_t) string[i];
+    for(int i = 80; i < 86; i++){
+        memoria_video[i].carattere = (uint8_t) string[i-80];
         memoria_video[i].colore = TXT_BLANCO;
     }
     
     while(1){}
     
 }
-
 
 // void clean_screen(){
 //     VGA_CHAR *memoria_video = (VGA_CHAR *) (VGA_MEMORY);
