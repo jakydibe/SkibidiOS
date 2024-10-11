@@ -5,7 +5,8 @@ KERNEL_DIR = kernel
 # Define the names of your source files
 BOOTLOADER = $(BOOTLOADER_DIR)/boot.asm
 ENTRY = $(KERNEL_DIR)/entry.asm
-KERNEL = $(KERNEL_DIR)/kernel.c
+KERNEL = $(KERNEL_DIR)/kernel.c 
+STRINGS = $(KERNEL_DIR)/strings.c
 PYTHON_SCRIPT = write_info_sector.py
 
 # Define the output directory for intermediate files
@@ -15,6 +16,7 @@ BUILD_DIR = build
 BOOTLOADER_BIN = $(BUILD_DIR)/boot.bin
 ENTRY_OBJ = $(BUILD_DIR)/entry.o
 KERNEL_OBJ = $(BUILD_DIR)/kernel.o
+STRINGS_OBJ = $(BUILD_DIR)/strings.o
 KERNEL_BIN = $(BUILD_DIR)/kernel.bin
 
 # The final OS image will be in the root directory
@@ -51,9 +53,13 @@ $(ENTRY_OBJ): $(ENTRY) | $(BUILD_DIR)
 $(KERNEL_OBJ): $(KERNEL) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $(KERNEL) -o $(KERNEL_OBJ)
 
+# compila il file strings.c per le funzioni di handling delle stringhe
+$(STRINGS_OBJ): $(STRINGS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $(STRINGS) -o $(STRINGS_OBJ)
+
 # Step 4: Link the entry and kernel code together into a single binary
-$(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ)
-	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(KERNEL_OBJ) -o $(KERNEL_BIN)
+$(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ)
+	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ)  -o $(KERNEL_BIN)
 
 # Step 5: Create the OS image by combining the bootloader and kernel
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
