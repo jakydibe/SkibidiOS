@@ -63,7 +63,7 @@ $(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ)
 
 # Step 5: Create the OS image by combining the bootloader and kernel
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
-	python $(PYTHON_SCRIPT) $(BOOTLOADER_BIN) $(KERNEL_BIN) $(OS_IMAGE)
+	python3 $(PYTHON_SCRIPT) $(BOOTLOADER_BIN) $(KERNEL_BIN) $(OS_IMAGE)
 
 # Clean up the build directory and os-image
 clean:
