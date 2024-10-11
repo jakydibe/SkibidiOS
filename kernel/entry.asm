@@ -1,7 +1,7 @@
 [bits 32]          ; Set to 32-bit mode
 
-section .text.entry
-global _start      ; Make _start visible to the linker
+section .header       ; This places the code in the .header section */
+global _start         ; Defines the entry point (used in the linker script) */
 
 _start:
     ; Call the kernel's entry point

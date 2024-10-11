@@ -2,6 +2,7 @@ ORG 0x7c00
 BITS 16
 
 KERNEL_OFFSET equ  0x1000
+INFO_SECTOR equ 0x7c00 + 512
 
 start:
     cli
@@ -18,25 +19,19 @@ start:
 
     mov [BOOT_DRIVE], dl ; BIOS stores our boot drive in DL , so it ’s best to remember this for later.
 
-    ; Set up parameters for INT 0x13
-    mov ah, 2          ; Function: Read Sectors
-    mov al, 2         ; Number of sectors to read
-    mov bx, KERNEL_OFFSET     ; Load address of the KERNEL_OFFSET into BX
-    mov ch, 0             ; Cylinder number (0)
-    mov cl, 2              ; Sector number (start reading from sector 2)
-    mov dh, 0             ; Head number (0)
-    mov dl, [BOOT_DRIVE] ; Drive number (from data section)
+    mov bx, INFO_SECTOR       ; destination address in RAM
+    mov cx, 2                     ; starting sector (the second)
+    push 1
+    call read_disk
+    pop ax
 
-    int 0x13 ; BIOS interrupt
+    mov bx, KERNEL_OFFSET
+    mov cx, 3       ; starting sector (the second)
+    mov ax, [INFO_SECTOR]
+    push ax
+    call read_disk
+    pop ax
 
-    cmp al, 2 ; if AL ( sectors read ) != DH ( sectors expected ) print error
-    je .kernel_loaded
-
-    mov si, MSG_KERNEL_LOAD_ERROR ; display error message
-    call print_string
-    jmp .infinite_loop
-
-.kernel_loaded:
     mov si, MSG_KERNEL_LOADED
     call print_string      ; Print kernel load message
 
@@ -57,13 +52,10 @@ start:
                                     ; pre - fetched and real - mode decoded instructions , which can
                                     ; cause problems.
 
-.infinite_loop:
-    jmp $
-
 %include "./bootloader/print/print_hex.asm"
-%include "./bootloader/print/print_hex_pm.asm"
 %include "./bootloader/print/print_string.asm"
 %include "./bootloader/print/print_string_pm.asm"
+%include "./bootloader/print/read_disk.asm"
 %include "./bootloader/gdt/gdt32.asm"
 
 BITS 32
@@ -91,8 +83,6 @@ protected_mode:
 ; Global variables
 BOOT_DRIVE : db 0
 MSG_REAL_MODE db " Started in 16 - bit Real Mode",0x0A, 0x0D, 0
-
-MSG_KERNEL_LOAD_ERROR: db ' Failed to read the disk! ',0x0A, 0x0D, 0
 MSG_KERNEL_LOADED: db ' Kernel loaded in memory, switching to protected mode',0x0A, 0x0D,  0
 MSG_PROT_MODE db " Successfully landed in 32 - bit Protected Mode " , 0
 

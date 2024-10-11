@@ -6,6 +6,7 @@ KERNEL_DIR = kernel
 BOOTLOADER = $(BOOTLOADER_DIR)/boot.asm
 ENTRY = $(KERNEL_DIR)/entry.asm
 KERNEL = $(KERNEL_DIR)/kernel.c
+PYTHON_SCRIPT = write_info_sector.py
 
 # Define the output directory for intermediate files
 BUILD_DIR = build
@@ -25,11 +26,11 @@ CC = gcc
 LD = ld
 
 # Compilation and linking flags
-ASMFLAGS = -f bin          # Bootloader needs to be in binary format
-ASMOBJFLAGS = -f elf32     # Entry ASM should be in ELF format for linking
+ASMFLAGS = -f bin# Bootloader needs to be in binary format
+ASMOBJFLAGS = -f elf32# Entry ASM should be in ELF format for linking
 CFLAGS = -m32 -ffreestanding -nostdlib -fno-pic -fno-pie -static
-LDFLAGS = -m elf_i386 -Ttext 0x1000 --oformat binary 
-#LDFLAGS = -m elf_i386 -T linker.ld --oformat binary       # con questa solo 4k, ma il bootloader fallisce in lettura del disco
+#LDFLAGS = -m elf_i386 -Ttext 0x1000 --oformat binary 
+LDFLAGS = -m elf_i386 -T linker.ld --oformat binary
 
 # Default target: build the OS image
 all: $(OS_IMAGE)
@@ -58,10 +59,18 @@ $(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ)
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
 	# Ensure the bootloader is exactly 512 bytes
 	dd if=$(BOOTLOADER_BIN) of=$(OS_IMAGE) bs=512 count=1 conv=notrunc
+
+	# Append info sector
+	python $(PYTHON_SCRIPT) $(KERNEL_BIN) $(OS_IMAGE)
+
 	# Append the kernel binary to the bootloader
 	cat $(KERNEL_BIN) >> $(OS_IMAGE)
-	
-	@echo "Size of $(OS_IMAGE): $$(du -h $(OS_IMAGE) | cut -f1)"
+
+	@echo "Size of $(OS_IMAGE): $$(ls -l $(OS_IMAGE) | awk '{print $$5}') bytes"
+
+	dd if=/dev/zero bs=1 count=$$(expr 4096 - $$(stat -c%s $(OS_IMAGE))) >> $(OS_IMAGE)
+
+	@echo "Final size of $(OS_IMAGE): $$(ls -l $(OS_IMAGE) | awk '{print $$5}') bytes"
 
 # Clean up the build directory and os-image
 clean:

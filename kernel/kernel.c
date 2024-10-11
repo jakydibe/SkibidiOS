@@ -8,24 +8,26 @@ typedef struct{
     int8_t colore;
 } VGA_CHAR;
 
+__attribute__((section(".data")))
+uint8_t string[] = "HELLO world!:)  hjhadasdasdasdasddddddddddddddddddddddddddddddddddddddddddddasdasdasdasd";
+
+__attribute__((section(".text")))
 int foo(){
     return 0;
 }
 
+__attribute__((section(".text")))
 int boo(){
     return 1;
 }
 
+__attribute__((section(".text")))
 void kernel_main() {
 
     VGA_CHAR *memoria_video = (VGA_CHAR *) VGA_MEMORY;
-
-    uint8_t string[] = "HELLO";
-    // clean_screen();
-
     
-    for(int i = 80; i < 86; i++){
-        memoria_video[i].carattere = (uint8_t) string[i-80];
+    for(int i = 160; i < 220; i++){
+        memoria_video[i].carattere = (uint8_t) string[i-160];
         memoria_video[i].colore = TXT_BLANCO;
     }
     
