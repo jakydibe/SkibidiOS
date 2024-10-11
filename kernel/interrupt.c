@@ -55,5 +55,5 @@ void isr32_handler() {
     /* BLACK MAGIC – strongly discouraged! */
     __asm__("pusha");
     putc('C');
-    __asm__("popa; leave; iret; cli"); /* BLACK MAGIC! */
+    __asm__("popa; leave; iret"); /* BLACK MAGIC! */
 }

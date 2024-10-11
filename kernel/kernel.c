@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "strings.h"
-#include "interrupt.h"
+#include "interrupt/isr.h"
 
 
 void kernel_main(){    
@@ -9,7 +9,7 @@ void kernel_main(){
 
     clear_screen();
     
-    init_idt();
+    isr_install();
 
     __asm__("sti");
     puts("casac");

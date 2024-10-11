@@ -1,7 +1,7 @@
 # Define the source file locations
 BOOTLOADER_DIR = bootloader
 KERNEL_DIR = kernel
-
+INTERRUPT_DIR = kernel/interrupt
 # Define the names of your source files
 BOOTLOADER = $(BOOTLOADER_DIR)/boot.asm
 ENTRY = $(KERNEL_DIR)/entry.asm
@@ -60,15 +60,24 @@ $(KERNEL_OBJ): $(KERNEL) | $(BUILD_DIR)
 $(STRINGS_OBJ): $(STRINGS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $(STRINGS) -o $(STRINGS_OBJ)
 
-$(INTERRUPT_OBJ): $(INTERRUPT) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $(INTERRUPT) -o $(INTERRUPT_OBJ)
+# $(INTERRUPT_OBJ): $(INTERRUPT) | $(BUILD_DIR)
+# 	$(CC) $(CFLAGS) -c $(INTERRUPT) -o $(INTERRUPT_OBJ)
+
+$(BUILD_DIR)/idt.o : $(INTERRUPT_DIR)/idt.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $(INTERRUPT_DIR)/idt.c -o $(BUILD_DIR)/idt.o
+
+$(BUILD_DIR)/isr.o : $(INTERRUPT_DIR)/isr.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $(INTERRUPT_DIR)/isr.c -o $(BUILD_DIR)/isr.o
+
+$(BUILD_DIR)/interrupt.bin : $(INTERRUPT_DIR)/interrupt.asm | $(BUILD_DIR)
+	$(ASM) $(ASMOBJFLAGS) $(INTERRUPT_DIR)/interrupt.asm -o $(BUILD_DIR)/interrupt.bin
 
 $(MEM_OBJ): $(MEM) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $(MEM) -o $(MEM_OBJ)
 
 # Step 4: Link the entry and kernel code together into a single binary
-$(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ) $(INTERRUPT_OBJ) $(MEM_OBJ)
-	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ) $(INTERRUPT_OBJ) $(MEM_OBJ)  -o $(KERNEL_BIN)
+$(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ) $(MEM_OBJ) $(BUILD_DIR)/interrupt.bin $(BUILD_DIR)/isr.o $(BUILD_DIR)/idt.o
+	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ) $(MEM_OBJ) $(BUILD_DIR)/idt.o $(BUILD_DIR)/interrupt.bin $(BUILD_DIR)/isr.o -o $(KERNEL_BIN)
 
 # Step 5: Create the OS image by combining the bootloader and kernel
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
