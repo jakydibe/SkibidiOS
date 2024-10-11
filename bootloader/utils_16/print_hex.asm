@@ -1,19 +1,15 @@
-%ifndef PRINT_HEX_PM
-%define PRINT_HEX_PM
+%ifndef PRINT_HEX
+%define PRINT_HEX 
 
-print_hex_pm:
+[bits 16]
+print_hex:
     pusha
-    mov edx, VIDEO_MEMORY ; Set edx to the start of vid mem.
-
     mov bx, ax ; save value in bx
-    mov ah, WHITE_ON_BLACK ; Store the attributes in AH
+    mov ah, 0eh ; Write Character (AH = 0x0E)
     mov al, '0'
-    mov [edx], ax
-    add edx, 0x2
+    int 0x10 ; BIOS interrupt
     mov al, 'x'
-    mov [edx], ax
-    add edx, 0x2
-
+    int 0x10 ; BIOS interrupt
 .loop:
     mov ax, bx
     shr ax, 12
@@ -28,15 +24,17 @@ print_hex_pm:
 .is_digit:
     add ax, 48 ; Convert 0-9 to ASCII '0'-'9'
 .end:
-    ;mov al, ax ; Store the char at EBX in AL
-    mov ah, WHITE_ON_BLACK ; Store the attributes in AH
-    mov [edx], ax
-    add edx, 0x2
-
+    mov ah, 0eh ; Write Character (AH = 0x0E)
+    int 0x10 ; BIOS interrupt
+    
     shl bx, 4 ; shifta di 4 verso sinistra
     cmp bx, 0
     jne .loop
 
+    mov al, 0x0A
+    int 0x10 ; BIOS interrupt
+    mov al, 0x0D
+    int 0x10 ; BIOS interrupt
     popa
     ret
 

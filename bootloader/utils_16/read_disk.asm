@@ -2,7 +2,6 @@
 %define READ_DISK 
 
 [bits 16]
-
 ; bx destination address in RAM
 ; cx starting sector
 read_disk:          ; prima tocca pushare il settore e poi la destinazione

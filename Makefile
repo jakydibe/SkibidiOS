@@ -7,7 +7,7 @@ BOOTLOADER = $(BOOTLOADER_DIR)/boot.asm
 ENTRY = $(KERNEL_DIR)/entry.asm
 KERNEL = $(KERNEL_DIR)/kernel.c 
 STRINGS = $(KERNEL_DIR)/strings.c
-PYTHON_SCRIPT = write_info_sector.py
+PYTHON_SCRIPT = craft_image.py
 
 # Define the output directory for intermediate files
 BUILD_DIR = build
@@ -20,7 +20,7 @@ STRINGS_OBJ = $(BUILD_DIR)/strings.o
 KERNEL_BIN = $(BUILD_DIR)/kernel.bin
 
 # The final OS image will be in the root directory
-OS_IMAGE = os-image
+OS_IMAGE = skibidiOS
 
 # Tools for building
 ASM = nasm
@@ -63,20 +63,7 @@ $(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ)
 
 # Step 5: Create the OS image by combining the bootloader and kernel
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
-	# Ensure the bootloader is exactly 512 bytes
-	dd if=$(BOOTLOADER_BIN) of=$(OS_IMAGE) bs=512 count=1 conv=notrunc
-
-	# Append info sector
-	python $(PYTHON_SCRIPT) $(KERNEL_BIN) $(OS_IMAGE)
-
-	# Append the kernel binary to the bootloader
-	cat $(KERNEL_BIN) >> $(OS_IMAGE)
-
-	@echo "Size of $(OS_IMAGE): $$(ls -l $(OS_IMAGE) | awk '{print $$5}') bytes"
-
-	dd if=/dev/zero bs=1 count=$$(expr 4096 - $$(stat -c%s $(OS_IMAGE))) >> $(OS_IMAGE)
-
-	@echo "Final size of $(OS_IMAGE): $$(ls -l $(OS_IMAGE) | awk '{print $$5}') bytes"
+	python $(PYTHON_SCRIPT) $(BOOTLOADER_BIN) $(KERNEL_BIN) $(OS_IMAGE)
 
 # Clean up the build directory and os-image
 clean:

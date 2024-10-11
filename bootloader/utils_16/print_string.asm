@@ -1,6 +1,7 @@
 %ifndef PRINT_STRING
 %define PRINT_STRING 
 
+[bits 16]
 print_string:
     mov bx, 0
 .loop:

@@ -1,5 +1,5 @@
-ORG 0x7c00
-BITS 16
+[org 0x7c00]
+[bits 16]
 
 KERNEL_OFFSET equ  0x1000
 INFO_SECTOR equ 0x7c00 + 512
@@ -20,7 +20,7 @@ start:
     mov [BOOT_DRIVE], dl ; BIOS stores our boot drive in DL , so it ’s best to remember this for later.
 
     mov bx, INFO_SECTOR       ; destination address in RAM
-    mov cx, 2                     ; starting sector (the second)
+    mov cx, 2                 ; starting sector (the second)
     push 1
     call read_disk
     pop ax
@@ -52,13 +52,13 @@ start:
                                     ; pre - fetched and real - mode decoded instructions , which can
                                     ; cause problems.
 
-%include "./bootloader/print/print_hex.asm"
-%include "./bootloader/print/print_string.asm"
-%include "./bootloader/print/print_string_pm.asm"
-%include "./bootloader/print/read_disk.asm"
+%include "./bootloader/utils_16/print_hex.asm"
+%include "./bootloader/utils_16/print_string.asm"
+%include "./bootloader/utils_16/read_disk.asm"
+%include "./bootloader/utils_32/print_string_pm.asm"
 %include "./bootloader/gdt/gdt32.asm"
 
-BITS 32
+[bits 32]
 protected_mode:
     ; Initialise registers and the stack once in PM.
     mov eax, DATA32_SEG ; Now in PM , our old segments are meaningless ,
