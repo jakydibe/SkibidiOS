@@ -33,8 +33,6 @@ enum BG_BYTE{
     BG_LIGHT_GRAY = 7 << 4
 };
 
-
-
 //  0     000 0000
 // BLINK   BG  FG 
 
@@ -43,8 +41,9 @@ typedef char VGA_STYLE ;
 int strlen(char*);
 char digit_to_char(int);
 void clear_screen();
-void print(char*);
+void puts(char*);
 void putc(char);
+
 void swag_print(char* , VGA_STYLE);
 
 #endif

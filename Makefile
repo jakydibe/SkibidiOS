@@ -7,6 +7,8 @@ BOOTLOADER = $(BOOTLOADER_DIR)/boot.asm
 ENTRY = $(KERNEL_DIR)/entry.asm
 KERNEL = $(KERNEL_DIR)/kernel.c 
 STRINGS = $(KERNEL_DIR)/strings.c
+INTERRUPT = $(KERNEL_DIR)/interrupt.c
+MEM = $(KERNEL_DIR)/mem.c
 PYTHON_SCRIPT = craft_image.py
 
 # Define the output directory for intermediate files
@@ -18,7 +20,8 @@ ENTRY_OBJ = $(BUILD_DIR)/entry.o
 KERNEL_OBJ = $(BUILD_DIR)/kernel.o
 STRINGS_OBJ = $(BUILD_DIR)/strings.o
 KERNEL_BIN = $(BUILD_DIR)/kernel.bin
-
+INTERRUPT_OBJ = $(BUILD_DIR)/interrupt.o
+MEM_OBJ = $(BUILD_DIR)/mem.o
 # The final OS image will be in the root directory
 OS_IMAGE = skibidiOS
 
@@ -57,9 +60,15 @@ $(KERNEL_OBJ): $(KERNEL) | $(BUILD_DIR)
 $(STRINGS_OBJ): $(STRINGS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $(STRINGS) -o $(STRINGS_OBJ)
 
+$(INTERRUPT_OBJ): $(INTERRUPT) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $(INTERRUPT) -o $(INTERRUPT_OBJ)
+
+$(MEM_OBJ): $(MEM) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $(MEM) -o $(MEM_OBJ)
+
 # Step 4: Link the entry and kernel code together into a single binary
-$(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ)
-	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ)  -o $(KERNEL_BIN)
+$(KERNEL_BIN): $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ) $(INTERRUPT_OBJ) $(MEM_OBJ)
+	$(LD) $(LDFLAGS) $(ENTRY_OBJ) $(KERNEL_OBJ) $(STRINGS_OBJ) $(INTERRUPT_OBJ) $(MEM_OBJ)  -o $(KERNEL_BIN)
 
 # Step 5: Create the OS image by combining the bootloader and kernel
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
