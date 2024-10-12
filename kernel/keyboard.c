@@ -1,5 +1,6 @@
 #include "keyboard.h"
 #include "strings.h"
+#include "interrupt/isr.h"
 #include "io/io.h"
 
 /* Can't do this with a loop because we need the address
