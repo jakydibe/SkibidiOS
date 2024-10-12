@@ -41,8 +41,5 @@ def main():
         # align to multiple of 4096
         total_size = 1024 + len(kernel)
         f.write(b'\x00' * (total_size - total_size % 4096))
-
-    print(os_image + " created successful")
-
 if __name__ == "__main__":
     main()
