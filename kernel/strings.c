@@ -70,6 +70,27 @@ void puts(char* string){
     } 
 }
 
+void hexprint(unsigned int hexn){
+    puts("0x");
+    //Make hexn a string
+    int mask = 0xF0000000;
+    for(int i = 0; i < 8; i++){
+        char byte = (hexn & mask) >> 28; //low byte
+        char chr;
+        if(byte > 9){
+            chr = byte + 'A' - 9;
+        } else {
+            chr = byte + '0';
+        }
+        
+        putc(chr);
+        hexn = hexn << 4;
+    }
+}
+
+
+
+
 void swag_print(char* string, VGA_STYLE style){
     for(int i = 0; string[i] != 0x0; cursorX++, i++){
         if (string[i] == '\n'){
@@ -98,6 +119,7 @@ void clear_screen(){
 }
 
 
+
 void int_to_ascii(int n, char str[]) {
     int i, sign;
     if ((sign = n) < 0) n = -n;
@@ -111,3 +133,4 @@ void int_to_ascii(int n, char str[]) {
 
     /* TODO: implement "reverse" */
 }
+

@@ -1,9 +1,10 @@
 #include "isr.h"
 #include "idt.h"
 #include "../strings.h"
+#include "../io/io.h"
 
-/* Can't do this with a loop because we need the address
- * of the function names */
+isr_t interrupt_handlers[256];
+
 void isr_install() {
     set_idt_gate(0, (unsigned int)isr0);
     set_idt_gate(1, (unsigned int)isr1);
@@ -37,6 +38,36 @@ void isr_install() {
     set_idt_gate(29, (unsigned int)isr29);
     set_idt_gate(30, (unsigned int)isr30);
     set_idt_gate(31, (unsigned int)isr31);
+
+    // Remap the PIC
+    outb(0x20, 0x11);
+    outb(0xA0, 0x11);
+    outb(0x21, 0x20);
+    outb(0xA1, 0x28);
+    outb(0x21, 0x04);
+    outb(0xA1, 0x02);
+    outb(0x21, 0x01);
+    outb(0xA1, 0x01);
+    outb(0x21, 0x0);
+    outb(0xA1, 0x0); 
+
+    // Install the IRQs
+    set_idt_gate(32, (unsigned int)irq0);
+    set_idt_gate(33, (unsigned int)irq1);
+    set_idt_gate(34, (unsigned int)irq2);
+    set_idt_gate(35, (unsigned int)irq3);
+    set_idt_gate(36, (unsigned int)irq4);
+    set_idt_gate(37, (unsigned int)irq5);
+    set_idt_gate(38, (unsigned int)irq6);
+    set_idt_gate(39, (unsigned int)irq7);
+    set_idt_gate(40, (unsigned int)irq8);
+    set_idt_gate(41, (unsigned int)irq9);
+    set_idt_gate(42, (unsigned int)irq10);
+    set_idt_gate(43, (unsigned int)irq11);
+    set_idt_gate(44, (unsigned int)irq12);
+    set_idt_gate(45, (unsigned int)irq13);
+    set_idt_gate(46, (unsigned int)irq14);
+    set_idt_gate(47, (unsigned int)irq15);
 
     set_idt(); // Load with ASM
 }
@@ -81,6 +112,26 @@ char *exception_messages[] = {
 };
 
 void isr_handler(registers_t r) {
+    puts("received interrupt: ");
+
     puts(exception_messages[r.int_no]);
     puts("\n");
+}
+
+void irq_handler(registers_t r) {
+    
+    /* After every interrupt we need to send an EOI to the PICs
+     * or they will not send another interrupt again */
+    if (r.int_no >= 40) outb(0xA0, 0x20); /* slave */
+    outb(0x20, 0x20); /* master */  //0x20 == EOI (End Of Interrupt)
+
+    /* Handle the interrupt in a more modular way */
+    if (interrupt_handlers[r.int_no] != 0) {
+        isr_t handler = interrupt_handlers[r.int_no];
+        handler(r);
+    }
+}
+
+void register_interrupt_handler(unsigned char n, isr_t handler) {
+    interrupt_handlers[n] = handler;
 }

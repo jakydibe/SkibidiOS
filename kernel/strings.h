@@ -41,6 +41,7 @@ typedef char VGA_STYLE ;
 int strlen(char*);
 char digit_to_char(int);
 void clear_screen();
+void hexprint( unsigned int );
 void puts(char*);
 void putc(char);
 

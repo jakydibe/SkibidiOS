@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "strings.h"
+#include "keyboard.h"
 #include "interrupt/isr.h"
+#include "io/io.h"
 
 
 void kernel_main(){    
@@ -12,7 +14,8 @@ void kernel_main(){
     isr_install();
 
     __asm__("sti");
-    puts("casac");
+    keyboard_handler_init();
+    puts(stringa1);
     
 
     while(1){}

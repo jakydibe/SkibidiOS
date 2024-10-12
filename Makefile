@@ -17,8 +17,8 @@ ASM_SRCS = $(shell find $(SRC_DIR) -type f -name "*.asm")
 C_SRCS = $(shell find $(SRC_DIR) -type f -name "*.c")
 
 # Convert .c and .asm file names to .o file names in the build directory
-ASM_OBJS = $(shell mkdir -p $(dir $(BUILD_DIR)/dummy);) $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
-C_OBJS = $(shell mkdir -p $(dir $(BUILD_DIR)/dummy);) $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS))
+ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
+C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 
 # Define colors for echo output
 COLOR_GREEN = \033[0;32m
@@ -34,32 +34,33 @@ all: $(OS_IMAGE)
 
 # Rule to compile bootloader
 $(BOOTLOADER_BIN): bootloader/boot.asm
+	@mkdir -p $(dir $@)
 	@echo -e "${COLOR_BLUE}Assembling bootloader/boot.asm...${COLOR_RESET}"
-	nasm -f bin bootloader/boot.asm -o $(BOOTLOADER_BIN)
+	@nasm -f bin bootloader/boot.asm -o $(BOOTLOADER_BIN)
 
 # Rule for compiling .c files to .o files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	@echo -e "${COLOR_YELLOW}Compiling $<...${COLOR_RESET}"
-	gcc $(CFLAGS) -c $< -o $@
+	@gcc $(CFLAGS) -c $< -o $@
 # Rule for compiling .asm files to .o files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
 	@mkdir -p $(dir $@)
 	@echo -e "${COLOR_YELLOW}Assembling $<...${COLOR_RESET}"
-	nasm $(ASMOBJFLAGS) $< -o $@
+	@nasm $(ASMOBJFLAGS) $< -o $@
 
 # Rule to build the kernel
 $(KERNEL_BIN): $(C_OBJS) $(ASM_OBJS)
 	@echo -e "${COLOR_CYAN}Linking kernel...${COLOR_RESET}"
-	ld $(LDFLAGS) $(C_OBJS) $(ASM_OBJS) -o $(KERNEL_BIN)
+	@ld $(LDFLAGS) $(C_OBJS) $(ASM_OBJS) -o $(KERNEL_BIN)
 
 # Rule to build the os image
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
 	@echo -e "${COLOR_BLUE}Creating OS image...${COLOR_RESET}"
-	python3 $(PYTHON_SCRIPT) $(BOOTLOADER_BIN) $(KERNEL_BIN) $(OS_IMAGE)
+	@python3 $(PYTHON_SCRIPT) $(BOOTLOADER_BIN) $(KERNEL_BIN) $(OS_IMAGE)
 
 # Clean up object files and executable
 clean:
 	@echo -e "${COLOR_RED}Cleaning up...${COLOR_RESET}"
-	rm -rf $(BUILD_DIR) $(OS_IMAGE)
+	@rm -rf $(BUILD_DIR) $(OS_IMAGE)
 	@echo -e "${COLOR_GREEN}Clean completed.${COLOR_RESET}"
