@@ -67,7 +67,8 @@ protected_mode:
     mov es, eax
     mov fs, eax
     mov gs, eax
-    mov ebp, 0x90000 ; Update our stack position so it is right
+    ; mov ebp, 0x90000 ; Update our stack position so it is right
+    mov ebp, 0x00200000
     mov esp, ebp ; at the top of the free space.
 
     ; Enable A20 line, l'ho trovato qui: https://wiki.osdev.org/A20_Line

@@ -1,11 +1,10 @@
 #include "mem.h"
+#include "strings.h"
 
 
-
-void memcpy(char *source, char *dest, int nbytes) {
-    int i;
-    for (i = 0; i < nbytes; i++) {
-        *(dest + i) = *(source + i);
+void memcpy(char *src, char *dest, int nbytes) {
+    for (int i = 0; i < nbytes; i++) {
+        dest[i] = src[i];
     }
 }
 
