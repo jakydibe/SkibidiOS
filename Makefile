@@ -12,6 +12,11 @@ ASMOBJFLAGS = -f elf32
 CFLAGS = -m32 -ffreestanding -nostdlib -fno-pic -fno-pie -static
 LDFLAGS = -m elf_i386 -T linker.ld --oformat binary
 
+# Tools
+ASM = nasm
+CC := $(shell command -v i686-elf-gcc >/dev/null 2>&1 && echo i686-elf-gcc || echo gcc)
+LD := $(shell command -v i686-elf-ld >/dev/null 2>&1 && echo i686-elf-ld || echo ld)
+
 # Find all .c and .asm files in the current directory and subdirectories
 ASM_SRCS = $(shell find $(SRC_DIR) -type f -name "*.asm")
 C_SRCS = $(shell find $(SRC_DIR) -type f -name "*.c")
@@ -42,17 +47,17 @@ $(BOOTLOADER_BIN): bootloader/boot.asm
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	@echo -e "${COLOR_YELLOW}Compiling $<...${COLOR_RESET}"
-	@gcc $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
 # Rule for compiling .asm files to .o files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
 	@mkdir -p $(dir $@)
 	@echo -e "${COLOR_YELLOW}Assembling $<...${COLOR_RESET}"
-	@nasm $(ASMOBJFLAGS) $< -o $@
+	@$(ASM) $(ASMOBJFLAGS) $< -o $@
 
 # Rule to build the kernel
 $(KERNEL_BIN): $(C_OBJS) $(ASM_OBJS)
 	@echo -e "${COLOR_CYAN}Linking kernel...${COLOR_RESET}"
-	@ld $(LDFLAGS) $(C_OBJS) $(ASM_OBJS) -o $(KERNEL_BIN)
+	@$(LD) $(LDFLAGS) $(C_OBJS) $(ASM_OBJS) -o $(KERNEL_BIN)
 
 # Rule to build the os image
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN)
