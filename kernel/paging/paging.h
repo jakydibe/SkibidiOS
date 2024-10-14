@@ -51,18 +51,25 @@ typedef struct __attribute__((packed)) {
     bit 10:   -   |          -           |          -           |            -            |
     bit 11:   -   |          -           |          -           |            -            |
 */
-typedef struct __attribute__((packed)){
-    uint32_t present    : 1;
-    uint32_t rw         : 1;
-    uint32_t user       : 1;
-    uint32_t pwt        : 1;
-    uint32_t pcd        : 1;
-    uint32_t accessed   : 1;
-    uint32_t dirty      : 1;
-    uint32_t pat        : 1;
-    uint32_t global     : 1;  // 1 se la pagina è globale (non svuotata da TLB flush)
-    uint32_t ignored    : 3;
-    uint32_t physical_addr : 20; // Bit 12-31: Indirizzo base della pagina fisica
+typedef union __attribute__((packed)){
+    struct {
+        uint32_t present    : 1;
+        uint32_t rw         : 1;
+        uint32_t user       : 1;
+        uint32_t pwt        : 1;
+        uint32_t pcd        : 1;
+        uint32_t accessed   : 1;
+        uint32_t dirty      : 1;
+        uint32_t pat        : 1;
+        uint32_t global     : 1;  // 1 se la pagina è globale (non svuotata da TLB flush)
+        uint32_t ignored    : 3;
+        uint32_t : 20;
+    };
+
+    struct {
+        uint32_t flags : 12;
+        uint32_t physical_addr : 20; // Bit 12-31: Indirizzo base della pagina fisica
+    };
 } page_table_entry_t ;
 
 extern page_directory_entry_t page_directory[NUM_ENTRIES];
@@ -73,5 +80,7 @@ void enablePaging(unsigned int pd_addr);
 
 //merda in C
 void setup_paging();
+void map_virtual_to_physical(uint32_t virtual_addr, uint32_t physical_addr, uint32_t flags);
+uint32_t get_physical_address(uint32_t virtual_addr);
 
 #endif
