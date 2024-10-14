@@ -13,25 +13,17 @@ void initialize_interrupts(){
     __asm__ __volatile__("sti");
 }
 
-void kernel_main(){    
-    char* welcome = "Welcome from the SkibidiOS kernel\n";
-
+void kernel_main(){
+    char* welcome = "Welcome from the SkibidiOS kernel\n\n";
     clear_screen();
+    puts(welcome);
+    
     initialize_interrupts();
-    //hexprint(sizeof(long));
-
-    puts("\npd: ");
-    //hexprint(page_directory);
-    puts("\nasm pd: ");
 
     setup_paging();
-    enablePaging(page_directory);
-    //map_page(0x1001000, 0xDEADBEEF, 0x003);
-    //void* addr = get_physaddr(0xDEADBEEF);
-
-    // int PT_SIZE = sizeof(page_directory);
-    // puts("\nPT_SIZE: ");
-    // hexprint(PT_SIZE);
+    enablePaging((unsigned int) page_directory);
+    
+    puts("\n\n      Paging Enabled!!\n");
 
     while(1){}
 }

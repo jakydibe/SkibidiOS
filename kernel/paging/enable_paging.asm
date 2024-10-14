@@ -14,7 +14,6 @@ enablePaging:
     or eax, 0x80000000 ; Enable paging
 
 	mov cr0, eax
-    jmp $
 	ret
 
 
