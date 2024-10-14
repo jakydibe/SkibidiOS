@@ -7,11 +7,14 @@
 #define HEAP_BLOCKS (HEAP_SIZE / HEAP_BLOCK_SIZE) // Calcola automaticamente il numero di blocchi
 
 #define ALIGNMENT HEAP_BLOCK_SIZE
-#define size_t unsigned int
+//#define size_t unsigned int
+
 
 //ahahha ce sta questo alignment
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t))) // header size
+#include <stdint.h>
+#include <stddef.h>
 
 
 void init_heap();

@@ -18,16 +18,21 @@ void kernel_main(){
 
     clear_screen();
     initialize_interrupts();
-    hexprint(sizeof(long));
+    //hexprint(sizeof(long));
 
     puts("\npd: ");
-    hexprint(page_directory);
+    //hexprint(page_directory);
     puts("\nasm pd: ");
-    enablePaging((int*)page_directory);
-    map_page(0x1001000, 0xDEADBEEF, 0x003);
-    void* addr = get_physaddr(0xDEADBEEF);
-    hexprint(addr);
-    puts("\n");
+
+    setup_paging();
+    enablePaging(page_directory);
+    //map_page(0x1001000, 0xDEADBEEF, 0x003);
+    //void* addr = get_physaddr(0xDEADBEEF);
+
+    // int PT_SIZE = sizeof(page_directory);
+    // puts("\nPT_SIZE: ");
+    // hexprint(PT_SIZE);
+
     while(1){}
 }
 

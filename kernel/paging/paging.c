@@ -2,8 +2,9 @@
 
 
 
+// allineamela a 4096 bytes
 
-PAGE_TABLE page_directory[1024];
+//  PAGE_TABLE page_directory[1024] __attribute__((aligned(4096)));;
 
 
 // PD 1024 -> array di 1024 indirizzi -> PAGE 12 bit di flags indirizzo alla pagina
@@ -50,35 +51,73 @@ int rand(int module){
 }
 
 
+page_directory_entry_t page_directory[NUM_ENTRIES] __attribute__((aligned(4096)));
+
+// Page Table
+page_table_entry_t first_page_table[NUM_ENTRIES] __attribute__((aligned(4096)));
 
 // 10 bit     10 bit    12 bit     
 // PD      -> PT     -> flags
-void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
+// void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
 
-    // //lil bit of fun
-    // int random = rand(1024);
-    // virtualaddr = (unsigned int)virtualaddr + random;
+//     // //lil bit of fun
+//     // int random = rand(1024);
+//     // virtualaddr = (unsigned int)virtualaddr + random;
 
-    unsigned int pd_index = (unsigned int)virtualaddr >> 22; //first 10 bits
-    unsigned int pt_index = ((unsigned int) virtualaddr >> 12) & 0x3FF; //second 10 bits
-    PAGE page = page_directory[pd_index][pt_index];
+//     unsigned int pd_index = (unsigned int)virtualaddr >> 22; //first 10 bits
+//     unsigned int pt_index = ((unsigned int) virtualaddr >> 12) & 0x3FF; //second 10 bits
+//     PAGE page = page_directory[pd_index][pt_index];
 
-    // giga ezez
-    page.address = (unsigned int) physaddr >> 12;
-    page.permissions = flags;
-    page.present = 1;
+//     // giga ezez
+//     // page.address = (unsigned int) physaddr >> 12;
+//     // page.reserved = flags;
+//     // page.present = 1;
+
+// }
+
+// void *get_physaddr(void *virtualaddr) {
+//     unsigned int pd_index = (unsigned int)virtualaddr >> 22;
+//     unsigned int pt_index = ((unsigned int) virtualaddr >> 12) & 0x3FF;
+//     PAGE page = page_directory[pd_index][pt_index];
+//     //check se la pagina e stata mappata????
+
+
+//     //20 bit siora ricavati dalla pd e dalla pt |  12 bit sotto ricavati dal virtualaddr
+//     // if(page.present)
+//     //     return (void *)((page.address << 12) | ((unsigned int)virtualaddr & 0xFFF));
+//     // return 0;
+// }
+
+
+
+
+void set_page_directory_entry(page_directory_entry_t* entry, uint32_t page_table_base_addr, int present, int rw, int user) {
+    entry->present = present;
+    entry->rw = rw;
+    entry->user = user;
+    entry->page_table_base = page_table_base_addr >> 12;  // L'indirizzo è allineato a 4 KB, quindi sposta 12 bit a destra
 }
 
-void *get_physaddr(void *virtualaddr) {
-    unsigned int pd_index = (unsigned int)virtualaddr >> 22;
-    unsigned int pt_index = ((unsigned int) virtualaddr >> 12) & 0x3FF;
-    PAGE page = page_directory[pd_index][pt_index];
-    //check se la pagina e stata mappata????
-
-
-    //20 bit siora ricavati dalla pd e dalla pt |  12 bit sotto ricavati dal virtualaddr
-    if(page.present)
-        return (void *)((page.address << 12) | ((unsigned int)virtualaddr & 0xFFF));
-    return 0;
+// Funzione per configurare una singola Page Table Entry
+void set_page_table_entry(page_table_entry_t* entry, uint32_t page_base_addr, int present, int rw, int user) {
+    entry->present = present;
+    entry->rw = rw;
+    entry->user = user;
+    entry->page_base_addr = page_base_addr >> 12;  // L'indirizzo è allineato a 4 KB, quindi sposta 12 bit a destra
 }
 
+// Esempio di setup
+void setup_paging() {
+    // Inizializza il Page Directory
+    for (int i = 0; i < NUM_ENTRIES; i++) {
+        set_page_directory_entry(&page_directory[i], 0, 0, 0, 0);  // Disabilita tutte le entry all'inizio
+    }
+    
+    // Inizializza la prima Page Table (identity mapping, mappa 1:1 indirizzi fisici e virtuali)
+    for (int i = 0; i < NUM_ENTRIES; i++) {
+        set_page_table_entry(&first_page_table[i], i * PAGE_SIZE, 1, 1, 0);  // Mappa ogni pagina fisica a se stessa
+    }
+
+    // Collegare la prima Page Table al Page Directory
+    set_page_directory_entry(&page_directory[0], (uint32_t)first_page_table, 1, 1, 0);  // Prima entry del Page Directory
+}
