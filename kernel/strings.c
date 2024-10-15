@@ -134,7 +134,7 @@ void hexprint(unsigned int hexn){
         char byte = (hexn & mask) >> 28; //low byte
         char chr;
         if(byte > 9){
-            chr = byte + 'A' - 9;
+            chr = byte + 'A' - 10;
         } else {
             chr = byte + '0';
         }

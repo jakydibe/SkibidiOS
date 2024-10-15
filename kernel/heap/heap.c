@@ -96,8 +96,3 @@ void free(void *addr){
         i++;
     }while(!blocks[i].is_last);
 }
-
-
-
-
-

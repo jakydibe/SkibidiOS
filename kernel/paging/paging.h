@@ -72,15 +72,10 @@ typedef union __attribute__((packed)){
     };
 } page_table_entry_t ;
 
-extern page_directory_entry_t page_directory[NUM_ENTRIES];
-extern page_table_entry_t first_page_table[NUM_ENTRIES];
-
-// Asm routine to enable paging
-void enablePaging(unsigned int pd_addr);
-
 //merda in C
 void setup_paging();
 void map_virtual_to_physical(uint32_t virtual_addr, uint32_t physical_addr, uint32_t flags);
+void map_memory_region(uint32_t virtual_addr, uint32_t physical_addr, uint32_t size, uint32_t flags);
 uint32_t get_physical_address(uint32_t virtual_addr);
 
 #endif
