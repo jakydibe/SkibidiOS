@@ -1,7 +1,7 @@
 #include "keyboard.h"
-#include "strings.h"
-#include "interrupt/isr.h"
-#include "io/io.h"
+#include "../utils/strings.h"
+#include "../interrupt/isr.h"
+#include "../io/io.h"
 
 /* Can't do this with a loop because we need the address
  * of the function names */
@@ -22,7 +22,6 @@ char convert_scancode_to_ascii(unsigned char scancode) {
     }
     return 0;
 }
-
 
 void keyboard_handler(registers_t r) {
 

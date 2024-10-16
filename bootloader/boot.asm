@@ -4,9 +4,6 @@
 KERNEL_OFFSET equ  0x1000
 INFO_SECTOR equ 0x7c00 + 512
 
-jmp start
-times 4 db 0xAAAAAAAA
-
 start:
     cli
     ; inizialize all registers to 0

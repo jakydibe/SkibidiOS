@@ -1,6 +1,6 @@
 #include "isr.h"
 #include "idt.h"
-#include "../strings.h"
+#include "../utils/strings.h"
 #include "../io/io.h"
 
 isr_t interrupt_handlers[256];

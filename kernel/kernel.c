@@ -1,10 +1,11 @@
 #include <stdint.h>
-#include "strings.h"
-#include "mem.h"
+#include "utils/strings.h"
+#include "utils/mem.h"
 #include "interrupt/isr.h"
-#include "keyboard.h"
+#include "keyboard/keyboard.h"
 #include "heap/heap.h"
 #include "paging/paging.h"
+#include "disk/disk.h"
 
 void initialize_interrupts(){
     isr_install();
@@ -33,8 +34,6 @@ void kernel_main(){
 
     unsigned int flags = 0b11;
     map_virtual_to_physical(VA, PA, flags);
-    //asm volatile("mov %0, %%cr3" : : "r" (page_directory));
-    //asm volatile("invlpg (%0)" ::"r" (VA) : "memory");
 
     // Verify that the virtual address maps to the correct physical address
     unsigned int prova = get_physical_address(VA);
@@ -54,15 +53,10 @@ void kernel_main(){
     int value = *((int *) VA);
     hexprint(value);  // Should print 0xdeadbeef
 
-
-//int disk_read_sector(int lba, int total, void* buf)
-//int disk_read_block(struct disk* idisk, unsigned int lba, int total, void* buf)
-
-
     disk_search_and_init();
-    puts("\n\nTrying to read disk\n");
+    puts("\n\nReading from disk... ");
     int buffer[512];
-    disk_read_sector(0x0, 0x1, buffer);
+    verbose_disk_read_sector(0x0, 0x1, buffer);
     
     hexprint(buffer[0]);
     puts("\n");
@@ -70,26 +64,19 @@ void kernel_main(){
     puts("\n");
     hexprint(buffer[2]);
 
-    // hexprint(buffer[4]);
-    // hexprint(buffer[5]);
-
     int prova2[512] = {0xbeefdead , 0xbeefdead, 0xbeefdead};
-//void write_to_address(uint32_t byte_address, uint8_t* data, uint32_t data_size) {
 
-    puts("\n\nTrying to write to disk\n");
-    //write_to_address(0x0, &prova2, 4);
-    disk_write_sector(0x0,0x1, prova2);
+    puts("\n\nWriting to disk... ");
+    verbose_disk_write_sector(0x0, 0x1, prova2);
 
     int buffer2[512];
-    puts("\n");
-    disk_read_sector(0x0, 0x1, buffer2);
+    puts("\nReading from disk... ");
+    verbose_disk_read_sector(0x0, 0x1, buffer2);
     hexprint(buffer2[0]);
     puts("\n");
     hexprint(buffer2[1]);
     puts("\n");
     hexprint(buffer2[2]);
-
-    
     
     while(1){}
 }

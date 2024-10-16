@@ -1,6 +1,6 @@
 #include "paging.h"
 #include "../heap/heap.h"
-#include "../mem.h"
+#include "../utils/mem.h"
 
 // Asm routine to enable paging
 void enablePaging(unsigned int pd_addr);
@@ -79,13 +79,13 @@ uint32_t get_physical_address(uint32_t virtual_addr){
     uint32_t page_table_index = (virtual_addr >> 12) & 0x3FF;
 
     if (!page_directory[page_dir_index].present){
-        return NULL;
+        return 0;
     }
 
     page_table_entry_t *page_table = (page_table_entry_t *) (page_directory[page_dir_index].page_table_addr << 12);
 
     if (!page_table[page_table_index].present){
-        return NULL;
+        return 0;
     }
 
     return (page_table[page_table_index].physical_addr << 12) | (virtual_addr & 0xFFF);

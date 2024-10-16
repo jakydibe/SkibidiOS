@@ -6,19 +6,30 @@
 #define SKIBIDIOS_SECTOR_SIZE 512
 #define EIO 5
 
+typedef enum {
+    DISK_SUCCESS = 0,
+    DISK_ERR_TIMEOUT = -1,
+    DISK_ERR_DRIVE_FAULT = -2,
+    DISK_ERR_NO_DRQ = -3,
+    DISK_ERR_UNKNOWN = -4
+} disk_status_t;
+
 typedef unsigned int SKIBIDIOS_DISK_TYPE;
 
-struct disk
+typedef struct
 {
     SKIBIDIOS_DISK_TYPE type;
     int sector_size;
-};
-
-int disk_read_sector(int lba, int total, void* buf);
-int disk_write_sector(int lba, int total, void* buf);
+} DISK;
 
 void disk_search_and_init();
-struct disk* disk_get(int index);
-int disk_read_block(struct disk* idisk, unsigned int lba, int total, void* buf);
+
+disk_status_t disk_read_sector(int lba, int total, void* buf);
+disk_status_t disk_write_sector(int lba, int total, void* buf);
+
+void verbose_disk_read_sector(int lba, int total, void* buf);
+void verbose_disk_write_sector(int lba, int total, void* buf);
+
+void print_status(disk_status_t status);
 
 #endif

@@ -1,3 +1,7 @@
+#include "heap.h"
+#include "../utils/strings.h"
+#include "../utils/mem.h"
+
 /*
 1) decidere indirizzo di inizio Heap, (0x01000000), blocchi 4096 bytes
 2) tabella entry: 
@@ -12,11 +16,6 @@
     2) checkiamo se le N-1 successive ( con N numero di blocchi che ce servono) sono free
     3) ritorna 
 */
-
-#include "heap.h"
-#include "../strings.h"
-#include "../mem.h"
-
 
 typedef struct heap
 {
