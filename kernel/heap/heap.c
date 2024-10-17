@@ -79,7 +79,7 @@ void* malloc(size_t size){
                 }
 
                 //OCCHIO QUI CI VORREBBE -1 MA NON FUNZIONA CON -1
-                blocks[i+needed_blocks -1].is_last = 1;
+                blocks[i+needed_blocks-1].is_last = 1;
                 return (void *) HEAP_BASE + i*HEAP_BLOCK_SIZE;
             }
         }

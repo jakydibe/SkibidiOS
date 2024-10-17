@@ -41,15 +41,15 @@ disk_status_t disk_read_sector(int lba, int total, void* buf)
     unsigned short* ptr = (unsigned short*) buf;
     for (int b = 0; b < total; b++)
     {
-        // int timeout = TIMEOUT;
+        int timeout = TIMEOUT;
 
         // Wait for the drive to be ready (not busy and DRQ set)
         while ((insb(IDE_STATUS) & (IDE_STATUS_BUSY | IDE_STATUS_DRQ)) != IDE_STATUS_DRQ) 
         {
-            // if (--timeout == 0)
-            // {
-            //     return DISK_ERR_TIMEOUT;
-            // }
+            if (--timeout == 0)
+            {
+                return DISK_ERR_TIMEOUT;
+            }
         }
 
         // Check for errors in the status register
@@ -111,40 +111,45 @@ disk_status_t disk_write_sector(int lba, int total, void* buf)
             ptr++;              // Move to the next word in the buffer
         }
     }
-    for(int i=0;i<100000;i++){
-
-    }
+    for(int i=0;i<100000;i++); // wait or the next read won't work
     return DISK_SUCCESS;
 }
 
 
 void disk_write_to_addr(int addr, unsigned int bufsize, void* buf){
-    int sector = addr/SECTOR_SIZE;
-    int offset = addr%SECTOR_SIZE;
+    // puts("info\n    addr: ");
+    // hexprint(addr);
+    // puts("\n    bufsize: ");
+    // hexprint(bufsize);
+    // puts("\n    buf_addr: ");
+    // hexprint(buf);
 
-    int sector_to_write = (bufsize + 511)/SECTOR_SIZE;
-
-    //Write first sector 
-    //// char *sec_buf = malloc(sector_to_write*SECTOR_SIZE);
-    // char sec_buf[512*10];
-    char sec_buf[sector_to_write*SECTOR_SIZE];
-    hexprint(sec_buf);
-    
-    
-    
-    if(offset > 0){
-        
-        //copy the first sector read from the disk in sec_buf
-        verbose_disk_read_sector(sector, 1, sec_buf);
-        
-        //copy the last sector read from the disk in sec_buf
-        verbose_disk_read_sector(sector+sector_to_write-1, 1, sec_buf+((sector_to_write-1)*SECTOR_SIZE));
-        
-        //copy buf at secbuf+offset 
-        memcpy(buf, sec_buf+offset, bufsize);
+    unsigned int offset = addr%SECTOR_SIZE;
+    if(offset){ // start in the middle of a sector
+        char sec_buf[SECTOR_SIZE];
+        int sector_begin = addr/SECTOR_SIZE;
+        disk_read_sector(sector_begin, 1, sec_buf); // leggi il settore
+        memcpy(buf, sec_buf+offset, SECTOR_SIZE-offset);           // modifica la parte di settore da modificare
+        disk_write_sector(sector_begin, 1, sec_buf);// riscrivi il settore in memoria
+        // Non mi va di pensare come coordinare le cose quando entra qua, chiamo la funzione con nuovi parametri
+        return disk_write_to_addr(addr + (SECTOR_SIZE-offset), bufsize - (SECTOR_SIZE-offset), ((char *) buf) + (SECTOR_SIZE-offset));
     }
 
-    disk_write_sector(sector, sector_to_write, sec_buf);
+    offset = bufsize%SECTOR_SIZE;
+    if(offset){ // end in the middle of a sectorù
+        char sec_buf[SECTOR_SIZE];
+        int sector_end = (addr + bufsize + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
+        disk_read_sector(sector_end, 1, sec_buf);   // leggi il settore
+        memcpy(buf+bufsize-offset, sec_buf, offset);        // modifica la parte di settore da modificare
+        disk_write_sector(sector_end, 1, sec_buf);// riscrivi il settore in memoria
+        // Non mi va di pensare... come sopra
+        return disk_write_to_addr(addr, bufsize - offset, buf);
+    }
+
+    // Edge case gia considerati, numero preciso di settori da scrivere
+    int lba = addr/SECTOR_SIZE;
+    int total = bufsize/SECTOR_SIZE;
+    disk_write_sector(lba, total, buf);
 }
 
 void verbose_disk_read_sector(int lba, int total, void* buf){

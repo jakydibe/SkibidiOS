@@ -23,68 +23,61 @@ void kernel_main(){
     
     initialize_interrupts();
 
-    // write on index 0x25000
-    unsigned int PA = 0xaaa000;
-    *((int *) PA) = 0xdeadbeef;
-
-    unsigned int VA = 0x600000; //1 tabella ->1024 * 1024 * 4096
-    *((int *) VA) = 0xbadc0ffe;
-
     setup_paging();
-    // char ciao[] = "Wel  come";
-    // char* caio = malloc(10);
-    // hexprint(*ciao);
-    // *((char *)0x1000001);
-    // // for(int i = 0; i < 1; i++){
-    // //    //*((char *)0x1000000 + i) = 
-    // //    *((char *)0x1000000 + i) = ciao[i];
-    // // }
-    // puts(caio);
-    // memcpy(ciao, caio, 10);
-    // puts("\nPaging Enabled!!\n");
 
-    // unsigned int flags = 0b11;
-    // map_virtual_to_physical(VA, PA, flags);
-
-    // // Verify that the virtual address maps to the correct physical address
-    // unsigned int prova = get_physical_address(VA);
-    // puts("PA ricavato:");
-    // hexprint(prova);
-    // putc('\n');
-    // puts("PA orig:");
-    // hexprint(PA);
-
-    // if (get_physical_address(VA) == PA) {
-    //     puts("\nMapping successful!\n");
-    // } else {
-    //     puts("\nMapping failed\n");
-    // }
-
-    // puts("Testing dereferencing of the virtual address\n");
-    // int value = *((int *) VA);
-    // hexprint(value);  // Should print 0xdeadbeef
-
+    // Testing disk
     disk_search_and_init();
-    // puts("\n\nReading from disk... ");
-    // int buffer[512];
+
+    // char buffer[512];
     // verbose_disk_read_sector(START_DISK_EMPTY_SECTORS, 0x1, buffer);
-    
-    // hexprint(buffer[0]);
-    // puts("\n");
-    // hexprint(buffer[1]);
-    // puts("\n");
-    // hexprint(buffer[2]);
+    // puts("data:\n    ");
+    // hexprint(*((int *) buffer));
+    // puts("\n    ");
+    // hexprint(*((int *) buffer + 1));
+    // puts("\n    ");
+    // hexprint(*((int *) buffer + 2));
+    // puts("\n\n");
 
-    int prova2[4][512/4] = {{0xbeefdead , 0xbeefdead, 0xbeefdead}, {0xbeefdead , 0xbeefdead, 0xbeefdead}, {0xbeefdead , 0xbeefdead, 0xbeefdead}};
-    
-    disk_write_to_addr(START_DISK_EMPTY_SECTORS*0x200 + 0x32, 0x200, prova2);
-    
-    int prova3[4][128];
-    verbose_disk_read_sector(START_DISK_EMPTY_SECTORS, 0x4, prova3);
+    // char data[512] = "ABCDEFGHILMNOPQRSTUVZ";
+    // puts("writing ");
+    // puts(data);
+    // puts("\n");
+    // verbose_disk_write_sector(START_DISK_EMPTY_SECTORS, 0x1, data);
 
-    for(int i = 0; i < 128; i++){
-        hexprint(prova3[0][i]);
-        puts("-");
+    // verbose_disk_read_sector(START_DISK_EMPTY_SECTORS, 0x1, buffer);
+    // puts("data:\n    ");
+    // hexprint(*((int *) buffer));
+    // puts("\n    ");
+    // hexprint(*((int *) buffer + 1));
+    // puts("\n    ");
+    // hexprint(*((int *) buffer + 2));
+    // puts("\n\n");
+
+    int cacca_buffer[4][128];
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 128; j++){
+            cacca_buffer[i][j] = 0xcacca;
+        }
+    }
+    disk_write_sector(START_DISK_EMPTY_SECTORS, 0x4, cacca_buffer);
+
+    int buffer_addr[3][128] = {
+        {0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef},
+        {0xbadc0ffe, 0xbadc0ffe, 0xbadc0ffe, 0xbadc0ffe},
+        {0xfaceface, 0xfaceface, 0xfaceface, 0xfaceface},
+    };
+
+    disk_write_to_addr(START_DISK_EMPTY_SECTORS*0x200 + 0x32, 0x600, buffer_addr);
+    
+    int buffer_check[4][128];
+    disk_read_sector(START_DISK_EMPTY_SECTORS, 0x4, buffer_check);
+
+    for(int sec = 0; sec < 4; sec++){
+        for(int i = 0; i < 25; i++){
+            hexprint(buffer_check[sec][i]);
+            puts("-");
+        }
+        puts("\n");
     }
     
     while(1){}
