@@ -27,6 +27,8 @@ void disk_search_and_init();
 disk_status_t disk_read_sector(int lba, int total, void* buf);
 disk_status_t disk_write_sector(int lba, int total, void* buf);
 
+void disk_write_to_addr(int addr, unsigned int bufsize, void* buf);
+
 void verbose_disk_read_sector(int lba, int total, void* buf);
 void verbose_disk_write_sector(int lba, int total, void* buf);
 

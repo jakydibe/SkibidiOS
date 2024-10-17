@@ -26,6 +26,8 @@ def main():
         kernel += b'\x00' * (512 - len(kernel) % 512)
     
     assert bootloader and kernel and num_kernel_sectors, "Error"
+    paddingto1mb = (1024*1024)//512 - 2 - num_kernel_sectors
+    assert paddingto1mb > 0, "kernel too big"
 
     # Create os-image
     with open(os_image, 'wb') as f:
@@ -38,9 +40,9 @@ def main():
         # write kernel
         f.write(kernel)
 
-        # align to multiple of 4096
-        total_size = 1024 + len(kernel)
-        f.write(b'\x00' * (total_size - total_size % 4096))
+        f.write(b'\x00' * (512 * paddingto1mb))
+
+        f.write(b'\x00' * (1024*1024))
 
 if __name__ == "__main__":
     main()

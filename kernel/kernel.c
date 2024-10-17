@@ -7,6 +7,8 @@
 #include "paging/paging.h"
 #include "disk/disk.h"
 
+#define START_DISK_EMPTY_SECTORS 2048
+
 void initialize_interrupts(){
     isr_install();
     keyboard_handler_init();
@@ -29,54 +31,61 @@ void kernel_main(){
     *((int *) VA) = 0xbadc0ffe;
 
     setup_paging();
-    
-    puts("\nPaging Enabled!!\n");
+    // char ciao[] = "Wel  come";
+    // char* caio = malloc(10);
+    // hexprint(*ciao);
+    // *((char *)0x1000001);
+    // // for(int i = 0; i < 1; i++){
+    // //    //*((char *)0x1000000 + i) = 
+    // //    *((char *)0x1000000 + i) = ciao[i];
+    // // }
+    // puts(caio);
+    // memcpy(ciao, caio, 10);
+    // puts("\nPaging Enabled!!\n");
 
-    unsigned int flags = 0b11;
-    map_virtual_to_physical(VA, PA, flags);
+    // unsigned int flags = 0b11;
+    // map_virtual_to_physical(VA, PA, flags);
 
-    // Verify that the virtual address maps to the correct physical address
-    unsigned int prova = get_physical_address(VA);
-    puts("PA ricavato:");
-    hexprint(prova);
-    putc('\n');
-    puts("PA orig:");
-    hexprint(PA);
+    // // Verify that the virtual address maps to the correct physical address
+    // unsigned int prova = get_physical_address(VA);
+    // puts("PA ricavato:");
+    // hexprint(prova);
+    // putc('\n');
+    // puts("PA orig:");
+    // hexprint(PA);
 
-    if (get_physical_address(VA) == PA) {
-        puts("\nMapping successful!\n");
-    } else {
-        puts("\nMapping failed\n");
-    }
+    // if (get_physical_address(VA) == PA) {
+    //     puts("\nMapping successful!\n");
+    // } else {
+    //     puts("\nMapping failed\n");
+    // }
 
-    puts("Testing dereferencing of the virtual address\n");
-    int value = *((int *) VA);
-    hexprint(value);  // Should print 0xdeadbeef
+    // puts("Testing dereferencing of the virtual address\n");
+    // int value = *((int *) VA);
+    // hexprint(value);  // Should print 0xdeadbeef
 
     disk_search_and_init();
-    puts("\n\nReading from disk... ");
-    int buffer[512];
-    verbose_disk_read_sector(0x0, 0x1, buffer);
+    // puts("\n\nReading from disk... ");
+    // int buffer[512];
+    // verbose_disk_read_sector(START_DISK_EMPTY_SECTORS, 0x1, buffer);
     
-    hexprint(buffer[0]);
-    puts("\n");
-    hexprint(buffer[1]);
-    puts("\n");
-    hexprint(buffer[2]);
+    // hexprint(buffer[0]);
+    // puts("\n");
+    // hexprint(buffer[1]);
+    // puts("\n");
+    // hexprint(buffer[2]);
 
-    int prova2[512] = {0xbeefdead , 0xbeefdead, 0xbeefdead};
+    int prova2[4][512/4] = {{0xbeefdead , 0xbeefdead, 0xbeefdead}, {0xbeefdead , 0xbeefdead, 0xbeefdead}, {0xbeefdead , 0xbeefdead, 0xbeefdead}};
+    
+    disk_write_to_addr(START_DISK_EMPTY_SECTORS*0x200 + 0x32, 0x200, prova2);
+    
+    int prova3[4][128];
+    verbose_disk_read_sector(START_DISK_EMPTY_SECTORS, 0x4, prova3);
 
-    puts("\n\nWriting to disk... ");
-    verbose_disk_write_sector(0x0, 0x1, prova2);
-
-    int buffer2[512];
-    puts("\nReading from disk... ");
-    verbose_disk_read_sector(0x0, 0x1, buffer2);
-    hexprint(buffer2[0]);
-    puts("\n");
-    hexprint(buffer2[1]);
-    puts("\n");
-    hexprint(buffer2[2]);
+    for(int i = 0; i < 128; i++){
+        hexprint(prova3[0][i]);
+        puts("-");
+    }
     
     while(1){}
 }

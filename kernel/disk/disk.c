@@ -1,5 +1,6 @@
 #include "disk.h"
 #include "../io/io.h"
+#include "../heap/heap.h"
 #include "../utils/strings.h"
 #include "../utils/mem.h"
 
@@ -15,7 +16,9 @@
 #define IDE_STATUS_ERR  0x01
 #define IDE_STATUS 0x1F7
 
-#define TIMEOUT 100000  // Adjust based on your system's speed
+#define SECTOR_SIZE 0x200
+
+#define TIMEOUT 1000000  // Adjust based on your system's speed
 
 DISK disk;
 
@@ -38,15 +41,15 @@ disk_status_t disk_read_sector(int lba, int total, void* buf)
     unsigned short* ptr = (unsigned short*) buf;
     for (int b = 0; b < total; b++)
     {
-        int timeout = TIMEOUT;
+        // int timeout = TIMEOUT;
 
         // Wait for the drive to be ready (not busy and DRQ set)
         while ((insb(IDE_STATUS) & (IDE_STATUS_BUSY | IDE_STATUS_DRQ)) != IDE_STATUS_DRQ) 
         {
-            if (--timeout == 0)
-            {
-                return DISK_ERR_TIMEOUT;
-            }
+            // if (--timeout == 0)
+            // {
+            //     return DISK_ERR_TIMEOUT;
+            // }
         }
 
         // Check for errors in the status register
@@ -108,13 +111,49 @@ disk_status_t disk_write_sector(int lba, int total, void* buf)
             ptr++;              // Move to the next word in the buffer
         }
     }
+    for(int i=0;i<100000;i++){
+
+    }
     return DISK_SUCCESS;
 }
 
+
+void disk_write_to_addr(int addr, unsigned int bufsize, void* buf){
+    int sector = addr/SECTOR_SIZE;
+    int offset = addr%SECTOR_SIZE;
+
+    int sector_to_write = (bufsize + 511)/SECTOR_SIZE;
+
+    //Write first sector 
+    //// char *sec_buf = malloc(sector_to_write*SECTOR_SIZE);
+    // char sec_buf[512*10];
+    char sec_buf[sector_to_write*SECTOR_SIZE];
+    hexprint(sec_buf);
+    
+    
+    
+    if(offset > 0){
+        
+        //copy the first sector read from the disk in sec_buf
+        verbose_disk_read_sector(sector, 1, sec_buf);
+        
+        //copy the last sector read from the disk in sec_buf
+        verbose_disk_read_sector(sector+sector_to_write-1, 1, sec_buf+((sector_to_write-1)*SECTOR_SIZE));
+        
+        //copy buf at secbuf+offset 
+        memcpy(buf, sec_buf+offset, bufsize);
+    }
+
+    disk_write_sector(sector, sector_to_write, sec_buf);
+}
+
 void verbose_disk_read_sector(int lba, int total, void* buf){
+    puts("\nReading from disk... ");
     print_status(disk_read_sector(lba, total, buf));
 }
+
 void verbose_disk_write_sector(int lba, int total, void* buf){
+    puts("\nWriting to disk... ");
     print_status(disk_write_sector(lba, total, buf));
 }
 
