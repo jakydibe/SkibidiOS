@@ -131,8 +131,10 @@ void disk_write_to_addr(int addr, unsigned int bufsize, void* buf){
         disk_read_sector(sector_begin, 1, sec_buf); // leggi il settore
         memcpy(buf, sec_buf+offset, SECTOR_SIZE-offset);           // modifica la parte di settore da modificare
         disk_write_sector(sector_begin, 1, sec_buf);// riscrivi il settore in memoria
-        // Non mi va di pensare come coordinare le cose quando entra qua, chiamo la funzione con nuovi parametri
-        return disk_write_to_addr(addr + (SECTOR_SIZE-offset), bufsize - (SECTOR_SIZE-offset), ((char *) buf) + (SECTOR_SIZE-offset));
+
+        addr = addr + (SECTOR_SIZE-offset);
+        bufsize = bufsize - (SECTOR_SIZE-offset);
+        buf = ((char *) buf) + (SECTOR_SIZE-offset);
     }
 
     offset = bufsize%SECTOR_SIZE;
@@ -142,8 +144,8 @@ void disk_write_to_addr(int addr, unsigned int bufsize, void* buf){
         disk_read_sector(sector_end, 1, sec_buf);   // leggi il settore
         memcpy(buf+bufsize-offset, sec_buf, offset);        // modifica la parte di settore da modificare
         disk_write_sector(sector_end, 1, sec_buf);// riscrivi il settore in memoria
-        // Non mi va di pensare... come sopra
-        return disk_write_to_addr(addr, bufsize - offset, buf);
+        
+        bufsize = bufsize - offset;
     }
 
     // Edge case gia considerati, numero preciso di settori da scrivere

@@ -9,6 +9,9 @@
 #define HEAP_SIZE 52428800           // Dimensione totale della heap (50 MB)
 #define HEAP_BLOCKS (HEAP_SIZE / HEAP_BLOCK_SIZE) // Calcola automaticamente il numero di blocchi
 
+extern unsigned int num_malloc;
+extern unsigned int block_allocated;
+
 void init_heap();
 void* malloc(size_t size);
 void free(void *ptr);

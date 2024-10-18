@@ -80,6 +80,24 @@ void kernel_main(){
         puts("\n");
     }
     
+
+    clear_screen();
+    
+    // //sleep
+    // for(int i = 0; i < 1000000; i++){
+    //     continue;
+    // }
+
+    int acc = 0;
+    for(int i = 0; i < HEAP_SIZE; i+=64*PAGE_SIZE){
+        print_at_start(i);
+        acc += *((char *)(HEAP_BASE + i));
+    }
+    puts("ciclo finito\n");
+    hexprint(num_malloc);
+    puts("\n");
+    hexprint(block_allocated);
+    
     while(1){}
 }
 

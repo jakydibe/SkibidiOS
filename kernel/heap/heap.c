@@ -2,6 +2,9 @@
 #include "../utils/strings.h"
 #include "../utils/mem.h"
 
+unsigned int num_malloc = 0;
+unsigned int block_allocated = 0;
+
 /*
 1) decidere indirizzo di inizio Heap, (0x01000000), blocchi 4096 bytes
 2) tabella entry: 
@@ -63,7 +66,9 @@ void init_heap(){
 
 
 void* malloc(size_t size){
+    num_malloc++;
     int needed_blocks = (size + HEAP_BLOCK_SIZE - 1) / HEAP_BLOCK_SIZE;
+    block_allocated+=needed_blocks;
     for(int i = 0; i < (HEAP_BLOCKS - needed_blocks); i ++){
         int found = 0;
         if (!blocks[i].is_used){ 

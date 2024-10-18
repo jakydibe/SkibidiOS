@@ -144,7 +144,25 @@ void hexprint(unsigned int hexn){
     }
 }
 
-
+void print_at_start(unsigned int hexn){
+    cursorX = 0;
+    cursorY = 0;
+    puts("0x");
+    //Make hexn a string
+    int mask = 0xF0000000;
+    for(int i = 0; i < 8; i++){
+        char byte = (hexn & mask) >> 28; //low byte
+        char chr;
+        if(byte > 9){
+            chr = byte + 'A' - 10;
+        } else {
+            chr = byte + '0';
+        }
+        
+        putc(chr);
+        hexn = hexn << 4;
+    }
+}
 
 
 void swag_print(char* string, VGA_STYLE style){
