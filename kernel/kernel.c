@@ -6,6 +6,7 @@
 #include "heap/heap.h"
 #include "paging/paging.h"
 #include "disk/disk.h"
+#include "rgfs/rgfs.h"
 
 #define START_DISK_EMPTY_SECTORS 2048
 
@@ -93,7 +94,7 @@ void kernel_main(){
         print_at_start(i);
         acc += *((char *)(HEAP_BASE + i));
     }
-    puts("ciclo finito\n");
+    puts("\nciclo finito\n");
     hexprint(num_malloc);
     puts("\n");
     hexprint(block_allocated);
